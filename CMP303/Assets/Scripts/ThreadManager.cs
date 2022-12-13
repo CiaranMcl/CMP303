@@ -9,7 +9,7 @@ public class ThreadManager : MonoBehaviour
     private static readonly List<Action> executeCopiedOnMainThread = new List<Action>();
     private static bool actionToExecuteOnMainThread = false;
 
-    void FixedUpdate()
+    void Update()
     {
         UpdateMain();
     }

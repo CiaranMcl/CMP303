@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +7,12 @@ public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager instance;
     public GameObject playerPrefab;
+    public int tick = 0;
 
+    public GameObject spinPole;
+    private float poleRot = 0;
+
+    // Singleton initialiser
     void Awake()
     {
         if (instance == null)
@@ -22,16 +28,48 @@ public class NetworkManager : MonoBehaviour
 
     void Start()
     {
-        #if UNITY_EDITOR
-            Debug.LogError("Cannot start server in editor.");
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Server.Start(50, 42807);
-        #endif
+        // Limit framerate for performance
+        Application.targetFrameRate = 20;
+        
+        // Start server
+        Server.Start(12, 42807);
     }
 
-    public Player InstantiatePlayer()
+    void FixedUpdate()
     {
-        return Instantiate(playerPrefab, Vector3.zero, Quaternion.identity).GetComponent<Player>();
+        // If game is active increase tickrate and handle non player object movement
+        if (Server.gameStarted)
+        {
+            tick++;
+            PoleRot();
+        }
+
+        // Loops tick value in case server runs for a while
+        if (tick >= 50000) tick = 0;
+    }
+
+    private void PoleRot()
+    {
+        // Exponential speed increase using the server's tickrate
+        float rotation = 0.052f * ((int)(tick / 300) + 1);
+        if (rotation >= 3.14159f) rotation = 3.14159f;
+        poleRot += rotation;
+        if (poleRot >= 180) poleRot = -179;
+        spinPole.transform.Rotate(0, poleRot, 0); 
+
+        // Send rotation data to players      
+        DataSend.PoleSpin(poleRot);
+    }
+
+    private void OnApplicationQuit()
+    {
+        // Closes connections before exit
+        Server.Stop();
+    }
+
+    public Player InstantiatePlayer(Vector3 position)
+    {
+        // Creates player object
+        return Instantiate(playerPrefab, position, Quaternion.identity).GetComponent<Player>();
     }
 }

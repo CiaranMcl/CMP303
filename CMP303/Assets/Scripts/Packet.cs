@@ -1,9 +1,9 @@
 using System;
-using System.Text;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
-// This class is a modified version of the packet class from Tom Weiland's networking framework: https://github.com/tom-weiland/tcp-udp-networking
+// This class is a modified version of Tom Weiland's networking framework: https://github.com/tom-weiland/tcp-udp-networking
 
 /// <summary>Sent from server to client.</summary>
 public enum ServerPackets
@@ -185,6 +185,7 @@ public class Packet : IDisposable
         Write(value.z);
         Write(value.w);
     }
+
     #endregion
 
     #region Read Data
